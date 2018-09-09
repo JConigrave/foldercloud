@@ -1,0 +1,18 @@
+Package: foldercloud
+Type: Package
+Title: Loads Pdfs From a Folder and Creates a Wordcloud
+Version: 0.1.0
+Author: James Conigrave
+Maintainer: James Conigrave <james.conigrave@gmail.com>
+Description: Contains a single function 'foldercloud'. This function loads the contents of all PDFs in a folder. It then cleans the data and turns it into a wordcloud of frequencies.
+License: GPL-3
+Encoding: UTF-8
+LazyData: TRUE
+Imports:
+    pdftools (>= 1.8),
+    dplyr(>= 0.7.3),
+    tm(>= 0.7-5),
+    tidytext (>= 0.1.9),
+    wordcloud (>= 2.5),
+    magrittr (>= 1.5)
+RoxygenNote: 6.1.0
