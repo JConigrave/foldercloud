@@ -123,7 +123,7 @@ foldercloud = function(folder,
   words = data.frame(table(corpus$word)) %>%
     arrange(desc(Freq)) %>%
     as_tibble %>%
-    rename(word = Var1) %>%
+    rename(word = Var1, freq = Freq) %>%
     mutate(word = as.character(word))
 
   "saving wordcloud" %>%
@@ -138,7 +138,7 @@ foldercloud = function(folder,
   )
   wordcloud(
     words = words$word,
-    freq = words$Freq,
+    freq = words$freq,
     max.words = max.words,
     scale = scale,
     min.freq = min.freq,
