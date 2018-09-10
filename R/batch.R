@@ -2,7 +2,7 @@
 #'
 #' takes in the path of a folder containing pdf. Performs frequency analysis and produces a wordcloud.
 #' @param folder a string. The path to a folder
-#' @param cloudname a string. The name of the destination file. Include document type: 'example.png'
+#' @param cloudname a string. The name of the destination file. Include document type. Default is "wordcloud.png".
 #' @param subfolders a logical. If TRUE, the algorithm will find all pdfs in all subfolders of the target path
 #' @param max.words a numeric. Maximum number of words to be plotted. least frequent terms dropped
 #' @param min.freq a numeric. Words with frequency below min.freq will not be plotted
@@ -19,6 +19,7 @@
 #' @importFrom dplyr mutate as_tibble tibble arrange desc
 #' @importFrom tm stripWhitespace stopwords
 #' @importFrom tidytext unnest_tokens
+#' @importFrom stringr str_extract
 #' @importFrom wordcloud wordcloud
 #' @importFrom grDevices dev.off png
 #' @importFrom stats na.omit
@@ -26,13 +27,13 @@
 #' @return A list containing a word frequency table, and a wordcloud
 
 foldercloud = function(folder,
-                       cloudname,
+                       cloudname = NULL,
                        subfolders = TRUE,
                        max.words = 500,
                        scale = c(3.8, .29),
                        min.freq = 4,
-                       width = 15,
-                       height = 15,
+                       width = 16,
+                       height = 16,
                        units = "cm",
                        res = 600,
                        exclude = c("journal"),
@@ -52,7 +53,23 @@ foldercloud = function(folder,
     return(out)
   }
 
+  prevent_duplicates = function(path = "wordcloud.png",folder = getwd()){
+    while(path %in% dir(folder)){ #while the folder contains a file with the same name
+      if(!grepl("\\[\\d\\]",path)){ #if there's not brackets with a name inside
+        path = paste0(gsub(".png","[1].png",path)) #add brackets with the number 1 in side
+      }else{
+        pod = str_extract(path, "\\[\\d\\]") #otherwise grab the brackets
+        num = as.numeric(gsub("\\D","", pod))+1 #get the number out and add 1 to it
+        path = gsub("\\[\\d\\].png","",path) #remove the old brackets with numbers in it
+        path = paste0(path,"[",num,"]",".png") #add the new brackets with higher number in it
+      }
+    }
+    return(path) #return the filename with the folder address pasted to it.
+  }
 
+  if(is.null(cloudname)){
+    cloudname = prevent_duplicates()
+  }
 
   ##define global variables
   .<-content<-word<-Freq<-Var1<-NULL
@@ -107,7 +124,9 @@ foldercloud = function(folder,
     arrange(desc(Freq)) %>%
     as_tibble %>%
     mutate(Var1 = as.character(Var1))
-  message(paste0("creating wordcloud at: ", getwd(), "/", cloudname))
+  "saving wordcloud" %>%
+    paste0(": ", cloudname) %>%
+    message
   png(
     cloudname,
     width = width,

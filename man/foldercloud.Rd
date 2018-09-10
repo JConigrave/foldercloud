@@ -4,14 +4,15 @@
 \alias{foldercloud}
 \title{foldercloud}
 \usage{
-foldercloud(folder, cloudname, subfolders = TRUE, max.words = 500,
-  scale = c(3.8, 0.29), min.freq = 4, width = 15, height = 15,
-  units = "cm", res = 600, exclude = c("journal"), ...)
+foldercloud(folder, cloudname = NULL, subfolders = TRUE,
+  max.words = 500, scale = c(3.8, 0.29), min.freq = 4, width = 16,
+  height = 16, units = "cm", res = 600, exclude = c("journal"),
+  ...)
 }
 \arguments{
 \item{folder}{a string. The path to a folder}
 
-\item{cloudname}{a string. The name of the destination file. Include document type: 'example.png'}
+\item{cloudname}{a string. The name of the destination file. Include document type. Default is "wordcloud.png".}
 
 \item{subfolders}{a logical. If TRUE, the algorithm will find all pdfs in all subfolders of the target path}
 
