@@ -16,7 +16,7 @@
 #' @export foldercloud
 #' @importFrom pdftools pdf_text
 #' @importFrom magrittr %>%
-#' @importFrom dplyr mutate as_tibble tibble arrange desc
+#' @importFrom dplyr mutate as_tibble tibble arrange desc rename
 #' @importFrom tm stripWhitespace stopwords
 #' @importFrom tidytext unnest_tokens
 #' @importFrom stringr str_extract
@@ -32,8 +32,8 @@ foldercloud = function(folder,
                        max.words = 500,
                        scale = c(3.8, .29),
                        min.freq = 4,
-                       width = 16,
-                       height = 16,
+                       width = 17,
+                       height = 17,
                        units = "cm",
                        res = 600,
                        exclude = c("journal"),
@@ -72,7 +72,7 @@ foldercloud = function(folder,
   }
 
   ##define global variables
-  .<-content<-word<-Freq<-Var1<-NULL
+  .<-content<-word<-Freq<-Var1<-NULL #this is so R won't freak out that these global varibales are in this function yet seemingly never defined.
 
   stop_words = tibble(word = tm::stopwords(), lexicon = "NA")
 
@@ -123,7 +123,9 @@ foldercloud = function(folder,
   words = data.frame(table(corpus$word)) %>%
     arrange(desc(Freq)) %>%
     as_tibble %>%
-    mutate(Var1 = as.character(Var1))
+    rename(word = Var1) %>%
+    mutate(word = as.character(word))
+
   "saving wordcloud" %>%
     paste0(": ", cloudname) %>%
     message
@@ -135,7 +137,7 @@ foldercloud = function(folder,
     res = res
   )
   wordcloud(
-    words = words$Var1,
+    words = words$word,
     freq = words$Freq,
     max.words = max.words,
     scale = scale,
