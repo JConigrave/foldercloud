@@ -9,7 +9,7 @@ foldercloud(folder, cloudname = NULL, subfolders = TRUE,
   height = 17, units = "cm", res = 600, exclude = c(), ...)
 }
 \arguments{
-\item{folder}{a string. The path to a folder}
+\item{folder}{a string. The path to a folder, or the path to a pdf}
 
 \item{cloudname}{a string. The name of the destination file. Include document type. Default is "wordcloud.png".}
 
@@ -37,5 +37,5 @@ foldercloud(folder, cloudname = NULL, subfolders = TRUE,
 A list containing a word frequency table, and a wordcloud
 }
 \description{
-takes in the path of a folder containing pdf. Performs frequency analysis and produces a wordcloud.
+takes in the path of a folder containing pdfs. Performs frequency analysis and produces a wordcloud.
 }

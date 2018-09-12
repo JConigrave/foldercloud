@@ -1,7 +1,7 @@
 #' foldercloud
 #'
-#' takes in the path of a folder containing pdf. Performs frequency analysis and produces a wordcloud.
-#' @param folder a string. The path to a folder
+#' takes in the path of a folder containing pdfs. Performs frequency analysis and produces a wordcloud.
+#' @param folder a string. The path to a folder, or the path to a pdf
 #' @param cloudname a string. The name of the destination file. Include document type. Default is "wordcloud.png".
 #' @param subfolders a logical. If TRUE, the algorithm will find all pdfs in all subfolders of the target path
 #' @param max.words a numeric. Maximum number of words to be plotted. least frequent terms dropped
@@ -99,6 +99,11 @@ foldercloud = function(folder,
     recursive = subfolders,
     full.names = T
   )
+
+  if(length(file_names) == 0 & tools::file_ext(tolower(folder)) == "pdf"){
+  file_names = basename(folder)
+  file_paths = folder
+  }
 
   if(length(file_names) == 0){
     stop("There aren't any .pdfs in that folder.", call. = F)
