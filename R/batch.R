@@ -36,7 +36,7 @@ foldercloud = function(folder,
                        height = 17,
                        units = "cm",
                        res = 600,
-                       exclude = c("journal"),
+                       exclude = c(),
                        ...) {
 
   getPdf = function(filename) {
@@ -53,23 +53,34 @@ foldercloud = function(folder,
     return(out)
   }
 
-  prevent_duplicates = function(path = "wordcloud.png",folder = getwd()){
-    while(path %in% dir(folder)){ #while the folder contains a file with the same name
-      if(!grepl("\\[\\d\\]",path)){ #if there's not brackets with a name inside
-        path = paste0(gsub(".png","[1].png",path)) #add brackets with the number 1 in side
+  prevent_duplicates = function(path = NULL){
+    if(is.null(path)){
+      path = "wordcloud.png"
+    }
+    ext = paste0(".",tools::file_ext(path))
+    if(ext == "."){
+      ext = ".png"
+      path = paste0(path,ext)
+    }
+    filename = basename(path)
+    folder = dirname(path) %>%
+      ifelse(nchar(.)<2,getwd(),.)
+
+    while(filename %in% dir(folder)){ #while the folder contains a file with the same name
+      if(!grepl("\\[\\d\\]",filename)){ #if there's not brackets with a name inside
+        filename = paste0(gsub(ext,paste0("[1]",ext),filename)) #add brackets with the number 1 in side
       }else{
-        pod = str_extract(path, "\\[\\d\\]") #otherwise grab the brackets
+        pod = str_extract(filename, "\\[\\d\\]") #otherwise grab the brackets
         num = as.numeric(gsub("\\D","", pod))+1 #get the number out and add 1 to it
-        path = gsub("\\[\\d\\].png","",path) #remove the old brackets with numbers in it
-        path = paste0(path,"[",num,"]",".png") #add the new brackets with higher number in it
+        filename = gsub(paste0("\\[\\d\\]",ext),"",filename) #remove the old brackets with numbers in it
+
+        filename = paste0(filename,"[",num,"]",ext) #add the new brackets with higher number in it
       }
     }
-    return(path) #return the filename with the folder address pasted to it.
+    return(paste(folder,filename,sep = "/")) #return the filename with the folder address pasted to it.
   }
 
-  if(is.null(cloudname)){
-    cloudname = prevent_duplicates()
-  }
+  cloudname = prevent_duplicates(cloudname)
 
   ##define global variables
   .<-content<-word<-Freq<-Var1<-NULL #this is so R won't freak out that these global varibales are in this function yet seemingly never defined.
@@ -88,6 +99,11 @@ foldercloud = function(folder,
     recursive = subfolders,
     full.names = T
   )
+
+  if(length(file_names) == 0){
+    stop("There aren't any .pdfs in that folder.", call. = F)
+  }
+
   message(paste0("loading ", length(file_names), " pdfs..."))
   pb <- txtProgressBar(min = 0,
                        max = length(file_names),

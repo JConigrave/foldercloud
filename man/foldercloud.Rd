@@ -6,8 +6,7 @@
 \usage{
 foldercloud(folder, cloudname = NULL, subfolders = TRUE,
   max.words = 500, scale = c(3.8, 0.29), min.freq = 4, width = 17,
-  height = 17, units = "cm", res = 600, exclude = c("journal"),
-  ...)
+  height = 17, units = "cm", res = 600, exclude = c(), ...)
 }
 \arguments{
 \item{folder}{a string. The path to a folder}
