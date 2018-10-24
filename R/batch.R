@@ -12,6 +12,7 @@
 #' @param units a string. The units in which height and width are given. Can be px (pixels), in (inches), cm(default) or mm.
 #' @param res a numeric. The nominal resolution in ppi (pixels per inch) which will be recorded in the bitmap file. Default is 600ppi.
 #' @param exclude a charcater vector. Words in this vector will be excluded from the final plot.
+#' @param save a boolean. If save is set to True, a wordcloud will be saved to your working directory.
 #' @param ... additional arguments may be passed to the word cloud here.
 #' @export foldercloud
 #' @importFrom pdftools pdf_text
@@ -30,12 +31,13 @@ foldercloud = function(folder,
                        cloudname = NULL,
                        subfolders = TRUE,
                        max.words = 500,
-                       scale = c(3.8, .29),
-                       min.freq = 4,
+                       scale = c(4, .28),
+                       min.freq = 3,
                        width = 17,
                        height = 17,
                        units = "cm",
                        res = 600,
+                       save = T,
                        exclude = c(),
                        ...) {
 
@@ -146,7 +148,7 @@ foldercloud = function(folder,
     as_tibble %>%
     rename(word = Var1, freq = Freq) %>%
     mutate(word = as.character(word))
-
+if(save == T){
   "saving wordcloud" %>%
     paste0(": ", cloudname) %>%
     message
@@ -157,6 +159,7 @@ foldercloud = function(folder,
     units = units,
     res = res
   )
+}
   wordcloud(
     words = words$word,
     freq = words$freq,
@@ -165,7 +168,9 @@ foldercloud = function(folder,
     min.freq = min.freq,
     ...
   )
+  if(save == T){
   dev.off()
+  }
 if(nrow(errors)>0){
   warning(paste0(nrow(errors), " (",round(nrow(errors)/length(file_paths)*100,1),"%) pdfs could not be read"),call.=F)
 }

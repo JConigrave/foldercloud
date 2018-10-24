@@ -5,8 +5,9 @@
 \title{foldercloud}
 \usage{
 foldercloud(folder, cloudname = NULL, subfolders = TRUE,
-  max.words = 500, scale = c(3.8, 0.29), min.freq = 4, width = 17,
-  height = 17, units = "cm", res = 600, exclude = c(), ...)
+  max.words = 500, scale = c(4, 0.28), min.freq = 3, width = 17,
+  height = 17, units = "cm", res = 600, save = T, exclude = c(),
+  ...)
 }
 \arguments{
 \item{folder}{a string. The path to a folder, or the path to a pdf}
@@ -28,6 +29,8 @@ foldercloud(folder, cloudname = NULL, subfolders = TRUE,
 \item{units}{a string. The units in which height and width are given. Can be px (pixels), in (inches), cm(default) or mm.}
 
 \item{res}{a numeric. The nominal resolution in ppi (pixels per inch) which will be recorded in the bitmap file. Default is 600ppi.}
+
+\item{save}{a boolean. If save is set to True, a wordcloud will be saved to your working directory.}
 
 \item{exclude}{a charcater vector. Words in this vector will be excluded from the final plot.}
 
