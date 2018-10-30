@@ -5,7 +5,10 @@ To install run the following code in R:<br/>
 #install packages
 install.packages("devtools")
 devtools::install_github("JConigrave/foldercloud")
+```
+Adapt this code to create a wordcloud:<br/>
 
+```
 #load library
 library(foldercloud)
 
