@@ -214,8 +214,6 @@ if(save == T){
   if(save == T){
   dev.off()
   }
-if(nrow(errors)>0){
-  warning(paste0(nrow(errors), " (",round(nrow(errors)/length(file_paths)*100,1),"%) pdfs could not be read"),call.=F)
-}
-  return(list(unread = errors,words = words))
+
+  return(list(words = words))
 }
