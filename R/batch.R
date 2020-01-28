@@ -2,10 +2,12 @@
 #'
 #' Extracts all words from PDFs
 #' @param folder the path to a folder
+#' @param subfolders a bool. if true, subfolders included
+#' @param exclude words to exclude
 #' @importFrom dplyr %>%
 #' @export pdf_words
 
-pdf_words = function(folder){
+pdf_words = function(folder, subfolders = T, exclude = c()){
 
   stop_words = tibble::tibble(word = tm::stopwords(), lexicon = "NA")
 
@@ -32,17 +34,14 @@ pdf_words = function(folder){
   }
 
   message(paste0("loading ", length(file_names), " pdfs..."))
-  pb <- txtProgressBar(min = 0,
-                       max = length(file_names),
-                       style = 3)
-  corpus = lapply(seq_along(file_names), function(x) {
+  future::plan("multisession")
+  corpus = future.apply::future_lapply(seq_along(file_names), function(x) {
     out = tibble::tibble(path = file_paths[x], content = getPdf(file_paths[x]))
-    setTxtProgressBar(pb, x)
+
     return(out)
   })
 
   corpus = do.call(rbind, corpus)
-  close(pb)
 
   errors = corpus[is.na(corpus$content), "path"]
   corpus = na.omit(corpus)
@@ -176,7 +175,7 @@ foldercloud = function(folder,
 
   cloudname = prevent_duplicates(cloudname)
 
-  corpus = pdf_words(folder)
+  corpus = pdf_words(folder, subfolders = subfolders, exclude = exclude)
 
   words = data.frame(table(corpus$word)) %>%
     dplyr::arrange(desc(Freq))
