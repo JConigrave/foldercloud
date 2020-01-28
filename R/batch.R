@@ -3,11 +3,12 @@
 #' Extracts all words from PDFs
 #' @param folder the path to a folder
 #' @param subfolders a bool. if true, subfolders included
+#' @param unnest_tokens a bool. If true, a dataset split into one word per row is returned.
 #' @param exclude words to exclude
 #' @importFrom dplyr %>%
 #' @export pdf_words
 
-pdf_words = function(folder, subfolders = T, exclude = c()){
+pdf_words = function(folder, subfolders = T, unnest_tokens = T, exclude = c()){
 
   stop_words = tibble::tibble(word = tm::stopwords(), lexicon = "NA")
 
@@ -41,7 +42,9 @@ pdf_words = function(folder, subfolders = T, exclude = c()){
     return(out)
   })
 
+
   corpus = do.call(rbind, corpus)
+  if(!unnest_tokens) return(corpus)
 
   errors = corpus[is.na(corpus$content), "path"]
   corpus = na.omit(corpus)
