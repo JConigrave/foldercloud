@@ -4,12 +4,14 @@
 \alias{pdf_words}
 \title{pdf_words}
 \usage{
-pdf_words(folder, subfolders = T, exclude = c())
+pdf_words(folder, subfolders = T, unnest_tokens = T, exclude = c())
 }
 \arguments{
 \item{folder}{the path to a folder}
 
 \item{subfolders}{a bool. if true, subfolders included}
+
+\item{unnest_tokens}{a bool. If true, a dataset split into one word per row is returned.}
 
 \item{exclude}{words to exclude}
 }

@@ -10,9 +10,9 @@ utils::globalVariables(c(".","errors","filepaths","subfolders","exclude", "file_
 #' @param ... additional arguments to grepl
 #' @export search_pdfs
 
-search_pdfs = function(folder, pattern, unnest_tokens = F, exec = T, ...){
+search_pdfs = function(folder, pattern, exec = T, ...){
 
-  corpus = pdf_words(folder, unnest_tokens = unnest_tokens)
+  corpus = pdf_words(folder, unnest_tokens = F)
   names(corpus) = c("path", "content")
 
   rows = grepl(pattern, corpus$content, ignore.case = T, ...)
