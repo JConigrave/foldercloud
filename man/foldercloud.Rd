@@ -4,10 +4,22 @@
 \alias{foldercloud}
 \title{foldercloud}
 \usage{
-foldercloud(folder, cloudname = NULL, subfolders = TRUE,
-  max.words = 500, scale = c(4, 0.28), min.freq = 3, width = 17,
-  height = 17, units = "cm", res = 600, save = T, caps = F,
-  exclude = c(), ...)
+foldercloud(
+  folder,
+  cloudname = NULL,
+  subfolders = TRUE,
+  max.words = 500,
+  scale = c(4, 0.28),
+  min.freq = 3,
+  width = 17,
+  height = 17,
+  units = "cm",
+  res = 600,
+  save = T,
+  caps = F,
+  exclude = c(),
+  ...
+)
 }
 \arguments{
 \item{folder}{a string. The path to a folder, or the path to a pdf}

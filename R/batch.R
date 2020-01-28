@@ -1,3 +1,135 @@
+#' pdf_words
+#'
+#' Extracts all words from PDFs
+#' @param folder the path to a folder
+#' @importFrom dplyr %>%
+#' @export pdf_words
+
+pdf_words = function(folder){
+
+  stop_words = tibble::tibble(word = tm::stopwords(), lexicon = "NA")
+
+  file_names = list.files(
+    folder,
+    pattern = ".pdf",
+    recursive = subfolders,
+    full.names = F
+  )
+  file_paths = list.files(
+    folder,
+    pattern = ".pdf",
+    recursive = subfolders,
+    full.names = T
+  )
+
+  if(length(file_names) == 0 & tools::file_ext(tolower(folder)) == "pdf"){
+    file_names = basename(folder)
+    file_paths = folder
+  }
+
+  if(length(file_names) == 0){
+    stop("There aren't any .pdfs in that folder.", call. = F)
+  }
+
+  message(paste0("loading ", length(file_names), " pdfs..."))
+  pb <- txtProgressBar(min = 0,
+                       max = length(file_names),
+                       style = 3)
+  corpus = lapply(seq_along(file_names), function(x) {
+    out = tibble::tibble(path = file_paths[x], content = getPdf(file_paths[x]))
+    setTxtProgressBar(pb, x)
+    return(out)
+  })
+
+  corpus = do.call(rbind, corpus)
+  close(pb)
+
+  errors = corpus[is.na(corpus$content), "path"]
+  corpus = na.omit(corpus)
+  if (nrow(corpus) == 0) {
+    stop("No pdf files could be read. Try different ones.")
+  }
+  backup = corpus
+  message("cleaning...")
+  suppressMessages(corpus <- tidytext::unnest_tokens(corpus, word, content))
+  corpus$word = tolower(corpus$word)
+  corpus$word = gsub("[[:digit:]]", "", corpus$word)
+  corpus$word = gsub("[[:punct:]]", "", corpus$word)
+  suppressMessages(
+    corpus <- corpus %>%
+      dplyr::filter(nchar(word) > 2) %>%
+      dplyr::filter(!word %in% exclude) %>%
+      dplyr::anti_join(stop_words)
+  )
+
+  return(corpus)
+
+}
+
+
+
+
+#' global_variables
+utils::globalVariables(c("content","word","Freq","Var1"))
+
+
+#' prevent_duplicates
+#'
+#' If a path is going to be overwritten, prevent that.
+#' @param path character UNIX path
+
+prevent_duplicates = function(path = NULL){
+  if(is.null(path)){
+    path = "wordcloud.png"
+  }
+  ext = paste0(".",tools::file_ext(path))
+  if(ext == "."){
+    ext = ".png"
+    path = paste0(path,ext)
+  }
+  filename = basename(path)
+  folder = dirname(path) %>%
+    ifelse(nchar(.)<2,getwd(),.)
+
+  while(filename %in% dir(folder)){ #while the folder contains a file with the same name
+    if(!grepl("\\[\\d\\]",filename)){ #if there's not brackets with a name inside
+      filename = paste0(gsub(ext,paste0("[1]",ext),filename)) #add brackets with the number 1 in side
+    }else{
+      pod = str_extract(filename, "\\[\\d\\]") #otherwise grab the brackets
+      num = as.numeric(gsub("\\D","", pod))+1 #get the number out and add 1 to it
+      filename = gsub(paste0("\\[\\d\\]",ext),"",filename) #remove the old brackets with numbers in it
+
+      filename = paste0(filename,"[",num,"]",ext) #add the new brackets with higher number in it
+    }
+  }
+  return(paste(folder,filename,sep = "/")) #return the filename with the folder address pasted to it.
+}
+
+
+
+
+#' getPdf
+#'
+#' Safely imports a pdf
+#' @param filename path
+
+getPdf = function(filename) {
+  out = NA
+  tryCatch({
+    suppressMessages(out <-
+                       filename %>%
+                       pdf_text %>%
+                       tm::stripWhitespace() %>%
+                       paste(collapse = " "))
+  }, error = function(e) {
+
+  })
+  return(out)
+}
+
+
+
+
 #' foldercloud
 #'
 #' takes in the path of a folder containing pdfs. Performs frequency analysis and produces a wordcloud.
@@ -20,7 +152,6 @@
 #' @importFrom magrittr %>%
 #' @importFrom dplyr mutate as_tibble tibble arrange desc rename
 #' @importFrom tm stripWhitespace stopwords
-#' @importFrom tidytext unnest_tokens
 #' @importFrom stringr str_extract
 #' @importFrom wordcloud wordcloud
 #' @importFrom grDevices dev.off png
@@ -43,113 +174,17 @@ foldercloud = function(folder,
                        exclude = c(),
                        ...) {
 
-  getPdf = function(filename) {
-    out = NA
-    tryCatch({
-      suppressMessages(out <-
-                         filename %>%
-                         pdf_text %>%
-                         tm::stripWhitespace() %>%
-                         paste(collapse = " "))
-    }, error = function(e) {
-
-    })
-    return(out)
-  }
-
-  prevent_duplicates = function(path = NULL){
-    if(is.null(path)){
-      path = "wordcloud.png"
-    }
-    ext = paste0(".",tools::file_ext(path))
-    if(ext == "."){
-      ext = ".png"
-      path = paste0(path,ext)
-    }
-    filename = basename(path)
-    folder = dirname(path) %>%
-      ifelse(nchar(.)<2,getwd(),.)
-
-    while(filename %in% dir(folder)){ #while the folder contains a file with the same name
-      if(!grepl("\\[\\d\\]",filename)){ #if there's not brackets with a name inside
-        filename = paste0(gsub(ext,paste0("[1]",ext),filename)) #add brackets with the number 1 in side
-      }else{
-        pod = str_extract(filename, "\\[\\d\\]") #otherwise grab the brackets
-        num = as.numeric(gsub("\\D","", pod))+1 #get the number out and add 1 to it
-        filename = gsub(paste0("\\[\\d\\]",ext),"",filename) #remove the old brackets with numbers in it
-
-        filename = paste0(filename,"[",num,"]",ext) #add the new brackets with higher number in it
-      }
-    }
-    return(paste(folder,filename,sep = "/")) #return the filename with the folder address pasted to it.
-  }
-
   cloudname = prevent_duplicates(cloudname)
 
-  ##define global variables
-  .<-content<-word<-Freq<-Var1<-NULL #this is so R won't freak out that these global varibales are in this function yet seemingly never defined.
-
-  stop_words = tibble(word = tm::stopwords(), lexicon = "NA")
-
-  file_names = list.files(
-    folder,
-    pattern = ".pdf",
-    recursive = subfolders,
-    full.names = F
-  )
-  file_paths = list.files(
-    folder,
-    pattern = ".pdf",
-    recursive = subfolders,
-    full.names = T
-  )
-
-  if(length(file_names) == 0 & tools::file_ext(tolower(folder)) == "pdf"){
-  file_names = basename(folder)
-  file_paths = folder
-  }
-
-  if(length(file_names) == 0){
-    stop("There aren't any .pdfs in that folder.", call. = F)
-  }
-
-  message(paste0("loading ", length(file_names), " pdfs..."))
-  pb <- txtProgressBar(min = 0,
-                       max = length(file_names),
-                       style = 3)
-  corpus = lapply(seq_along(file_names), function(x) {
-    out = tibble(path = file_names[x], content = getPdf(file_paths[x]))
-    setTxtProgressBar(pb, x)
-    return(out)
-  }) %>%
-    do.call("rbind", .) %>%
-    mutate(content = as.character(content))
-  close(pb)
-  errors = corpus[is.na(corpus$content), "path"]
-  corpus = na.omit(corpus)
-  if (nrow(corpus) == 0) {
-    stop("No pdf files could be read. Try different ones.")
-  }
-  backup = corpus
-  message("cleaning...")
-  suppressMessages(corpus <- corpus %>%
-                     unnest_tokens(word, content))
-  corpus$word = tolower(corpus$word)
-  corpus$word = gsub("[[:digit:]]", "", corpus$word)
-  corpus$word = gsub("[[:punct:]]", "", corpus$word)
-  suppressMessages(
-    corpus <- corpus %>%
-      dplyr::filter(nchar(word) > 2) %>%
-      dplyr::filter(!word %in% exclude) %>%
-      dplyr::anti_join(stop_words) %>%
-      as_tibble
-  )
+  corpus = pdf_words(folder)
 
   words = data.frame(table(corpus$word)) %>%
-    arrange(desc(Freq)) %>%
-    as_tibble %>%
-    rename(word = Var1, freq = Freq) %>%
-    mutate(word = as.character(word))
+    dplyr::arrange(desc(Freq))
+
+  words = tibble::as_tibble(words)
+  colnames(words) = c("word","freq")
+  words$word = as.character(words$word)
+
   if(caps == T){
   words$word = toupper(words$word)
   }
